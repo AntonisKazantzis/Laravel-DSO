@@ -49,8 +49,8 @@ class DustCalculator extends Page implements HasForms
                                 'opal' => 'Opal',
                             ])
                             ->live()
-                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                if (filled($get('item'))) {
+                            ->afterStateUpdated(function ($state, callable $get, callable $set, $old) {
+                                if (filled($get('item')) || $old === 'opal') {
                                     $this->resetValues($set);
                                 }
 
