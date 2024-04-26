@@ -2,7 +2,8 @@
 
 namespace App\Enums;
 
-enum GemRarityEnum: string {
+enum GemRarityEnum: string
+{
     case FLAWED = 'flawed';
     case SPLINTERED = 'splintered';
     case SIMPLE = 'simple';
@@ -21,59 +22,81 @@ enum GemRarityEnum: string {
     case BRILLIANT_IMPERIAL = 'brilliant_imperial';
     case EXQUISITE_IMPERIAL = 'exquisite_imperial';
 
-    public function offensive(): int
+    public static function toArray(): array
     {
-        return self::getOffensive($this);
+        return array_column(self::cases(), 'value');
     }
 
-    public static function getOffensive(self $value): int
+    // public static function toArrayUcwords(): array
+    // {
+    //     $cases = self::cases();
+    //     $arr1 = array_column($cases, 'value');
+
+    //     $arr2 = array_map(function ($rarity) {
+    //         return ucwords(str_replace('_', ' ', $rarity));
+    //     }, $arr1);
+
+    //     $result = array_combine($arr1, $arr2);
+
+    //     return $arr2;
+    // }
+
+    public static function toArrayUcwords($value): array
+    {
+        $cases = self::cases();
+        $arr1 = array_column($cases, 'value');
+
+        $gemIndex = array_search('gem', $arr1);
+        if ($gemIndex !== false) {
+            $arr1[$gemIndex] = $value;
+        }
+
+        $arr2 = array_map(function ($rarity) {
+            return ucwords(str_replace('_', ' ', $rarity));
+        }, $arr1);
+
+        return $arr2;
+    }
+
+    public static function toArrayFormatted(): array
+    {
+        $cases = self::cases();
+        $arr1 = array_column($cases, 'value');
+
+        $arr2 = array_map(function ($rarity) {
+            return ucwords(str_replace('_', ' ', $rarity));
+        }, $arr1);
+
+        $result = array_combine($arr1, $arr2);
+
+        return $result;
+    }
+
+    public function dust(): int
+    {
+        return self::getDust($this);
+    }
+
+    public static function getDust(self $value): array
     {
         return match ($value) {
-            self::FLAWED => 2,
-            self::SPLINTERED => 6,
-            self::SIMPLE => 10,
-            self::GEM => 20,
-            self::POLISHED => 50,
-            self::RADIANT => 150,
-            self::FLAWLESS => 450,
-            self::SACRED => 1000,
-            self::ROYAL => 2000,
-            self::TRAPEZOID => 3500,
-            self::REFINED_TRAPEZOID => 5500,
-            self::BRILLIANT_TRAPEZOID => 8000,
-            self::EXQUISITE_TRAPEZOID => 11000,
-            self::IMPERIAL => 14500,
-            self::REFINED_IMPERIAL => 18500,
-            self::BRILLIANT_IMPERIAL => 23000,
-            self::EXQUISITE_IMPERIAL => 28000,
-        };
-    }
-
-    public function defensive(): int
-    {
-        return self::getDefensive($this);
-    }
-
-    public static function getDefensive(self $value): int
-    {
-        return match ($value) {
-            self::FLAWED => 2,
-            self::SPLINTERED => 4,
-            self::SIMPLE => 8,
-            self::GEM => 16,
-            self::POLISHED => 40,
-            self::RADIANT => 120,
-            self::FLAWLESS => 360,
-            self::SACRED => 800,
-            self::ROYAL => 1600,
-            self::TRAPEZOID => 2800,
-            self::REFINED_TRAPEZOID => 4400,
-            self::BRILLIANT_TRAPEZOID => 6400,
-            self::EXQUISITE_TRAPEZOID => 8800,
-            self::IMPERIAL => 11600,
-            self::REFINED_IMPERIAL => 14800,
-            self::BRILLIANT_IMPERIAL => 18400,
-            self::EXQUISITE_IMPERIAL => 22400,
+            self::FLAWED => [2, 2],
+            self::SPLINTERED => [4, 6],
+            self::SIMPLE => [8, 10],
+            self::GEM => [16, 20],
+            self::POLISHED => [40, 50],
+            self::RADIANT => [120, 150],
+            self::FLAWLESS => [360, 450],
+            self::SACRED => [800, 1000],
+            self::ROYAL => [1600, 2000],
+            self::TRAPEZOID => [2800, 3500],
+            self::REFINED_TRAPEZOID => [4400, 5500],
+            self::BRILLIANT_TRAPEZOID => [6400, 8000],
+            self::EXQUISITE_TRAPEZOID => [8800, 11000],
+            self::IMPERIAL => [11600, 14500],
+            self::REFINED_IMPERIAL => [14800, 18500],
+            self::BRILLIANT_IMPERIAL => [18400, 23000],
+            self::EXQUISITE_IMPERIAL => [22400, 28000],
         };
     }
 }
