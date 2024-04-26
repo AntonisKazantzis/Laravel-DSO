@@ -2,9 +2,11 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Gem;
-use App\Models\Jewel;
-use App\Models\Rune;
+use App\Enums\GemRarityEnum;
+use App\Enums\GemTypeEnum;
+use App\Enums\JewelRarityEnum;
+use App\Enums\OpalRarityEnum;
+use App\Enums\RuneRarityEnum;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -36,7 +38,7 @@ class DustCalculator extends Page implements HasForms
         return $form
             ->schema([
                 Forms\Components\Section::make('Details')
-                    ->columns(3)
+                    ->columns(5)
                     ->collapsible()
                     ->persistCollapsed()
                     ->id('section-details')
@@ -53,94 +55,74 @@ class DustCalculator extends Page implements HasForms
                                 if (filled($get('item')) || $old === 'opal') {
                                     $this->resetValues($set);
                                 }
-
-                                if ($state === 'opal') {
-                                    $amount = $get('amount');
-                                    $this->setOpalDustValues($set, $amount);
-                                }
                             }),
 
                         Forms\Components\Select::make('item')
                             ->visible(fn(Get $get): bool => filled($get('type')) && $get('type') !== 'opal')
                             ->options(fn(Get $get): array=> match ($get('type')) {
-                                'gem' => Gem::pluck('name', 'id')->toArray(),
-                                'jewel' => Jewel::pluck('name', 'id')->toArray(),
-                                'rune' => Rune::pluck('name', 'id')->toArray(),
+                                'gem' => GemTypeEnum::toArrayFormatted(),
+                                'jewel' => JewelRarityEnum::getJewels(),
+                                'rune' => RuneRarityEnum::getRunes(),
                                 default => [],
                             })
-                            ->searchable()
-                            ->searchPrompt(fn(Get $get): string => match ($get('type')) {
-                                'gem' => 'Start typing to search for gems...',
-                                'jewel' => 'Start typing to search for jewels...',
-                                'rune' => 'Start typing to search for runes...',
-                                default => '',
+                            ->live(),
+
+                        Forms\Components\Select::make('from')
+                            ->visible(fn(Get $get): bool => filled($get('item')) || $get('type') === 'opal')
+                            ->options(fn(Get $get): array=> match ($get('type')) {
+                                'gem' => GemRarityEnum::toArrayUcwords($get('item')),
+                                'jewel' => JewelRarityEnum::toArrayUcwords(),
+                                'rune' => RuneRarityEnum::toArrayUcwords(),
+                                'opal' => OpalRarityEnum::toArrayUcwords(),
+                                default => [],
                             })
-                            ->searchingMessage(fn(Get $get): string => match ($get('type')) {
-                                'gem' => 'Searching gems...',
-                                'jewel' => 'Searching jewels...',
-                                'rune' => 'Searching runes...',
-                                default => '',
-                            })
-                            ->noSearchResultsMessage(fn(Get $get): string => match ($get('type')) {
-                                'gem' => 'No gems found...',
-                                'jewel' => 'No jewels found...',
-                                'rune' => 'No runes found...',
-                                default => '',
-                            })
-                            ->optionsLimit(5)
                             ->live()
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                if (filled($get('to'))) {
+                                    $set('to', null);
+                                }
+                            }),
+
+                        Forms\Components\Select::make('to')
+                            ->visible(fn(Get $get): bool => filled($get('item')) || $get('type') === 'opal')
+                            ->options(fn(Get $get): array=> match ($get('type')) {
+                                'gem' => $this->sliceItems(GemRarityEnum::toArrayUcwords($get('item')), $get('from')),
+                                'jewel' => $this->sliceItems(JewelRarityEnum::toArrayUcwords(), $get('from')),
+                                'rune' => $this->sliceItems(RuneRarityEnum::toArrayUcwords(), $get('from')),
+                                'opal' => $this->sliceItems(OpalRarityEnum::toArrayUcwords(), $get('from')),
+                                default => [],
+                            })
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $get, callable $set) {
+                                $value = $get('item');
+                                $from = $get('from');
+                                $to = $get('to');
                                 $amount = $get('amount');
 
-                                switch ($get('type')) {
-                                    case 'gem':
-                                        $object = Gem::find($state);
-                                        break;
-                                    case 'jewel':
-                                        $object = Jewel::find($state);
-                                        break;
-                                    case 'rune':
-                                        $object = Rune::find($state);
-                                        break;
-                                    default:
-                                        $object = [];
-                                }
-
-                                $this->setGemDustValues($set, $object, $amount);
+                                $this->setDust($get, $set, $value, $from, $to, $amount);
                             }),
 
                         Forms\Components\TextInput::make('amount')
                             ->default(1)
-                            ->visible(fn(Get $get): bool => filled($get('item')) || $get('type') === 'opal')
+                            ->visible(fn(Get $get): bool => filled($get('to')))
                             ->integer()
                             ->live()
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                                $item = $get('item');
+                                $value = $get('item');
+                                $from = $get('from');
+                                $to = $get('to');
+                                $amount = $state;
 
-                                switch ($get('type')) {
-                                    case 'gem':
-                                        $object = Gem::find($item);
-                                        break;
-                                    case 'jewel':
-                                        $object = Jewel::find($item);
-                                        break;
-                                    case 'rune':
-                                        $object = Rune::find($item);
-                                        break;
-                                    default:
-                                        $object = [];
-                                }
-
-                                $get('type') === 'opal' ? $this->setOpalDustValues($set, $state) : $this->setGemDustValues($set, $object, $state);
+                                $this->setDust($get, $set, $value, $from, $to, $amount);
                             }),
                     ]),
 
-                Forms\Components\Section::make('Costs')
+                Forms\Components\Section::make('Cost')
                     ->columnSpanFull()
-                    ->hidden(fn(Get $get): bool => filled($get('type')) && $get('type') === 'opal')
+                    ->visible(fn(Get $get): bool => filled($get('to')))
                     ->collapsible()
                     ->persistCollapsed()
-                    ->id('section-costs')
+                    ->id('section-cost')
                     ->schema([
                         Forms\Components\TextInput::make('upgrade_dust')
                             ->readonly()
@@ -158,159 +140,77 @@ class DustCalculator extends Page implements HasForms
                             ->columnSpan(1)
                             ->helperText("How much dust it'll give when melted."),
                     ]),
-
-                Forms\Components\Section::make('Costs')
-                    ->columns(3)
-                    ->visible(fn(Get $get): bool => filled($get('type')) && $get('type') === 'opal')
-                    ->collapsible()
-                    ->persistCollapsed()
-                    ->id('section-costs')
-                    ->schema([
-                        Forms\Components\TextInput::make('royal')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to trapezoid."),
-
-                        Forms\Components\TextInput::make('trapezoid')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Refined Trapezoid."),
-
-                        Forms\Components\TextInput::make('refined_trapezoid')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Brilliant Trapezoid."),
-
-                        Forms\Components\TextInput::make('brilliant_trapezoid')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Exquisite Trapezoid."),
-
-                        Forms\Components\TextInput::make('exquisite_trapezoid')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Imperial."),
-
-                        Forms\Components\TextInput::make('imperial')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Refined Imperial."),
-
-                        Forms\Components\TextInput::make('refined_imperial')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Brilliant Imperial."),
-
-                        Forms\Components\TextInput::make('brilliant_imperial')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Exquisite Imperial."),
-
-                        Forms\Components\TextInput::make('exquisite_imperial')
-                            ->readonly()
-                            ->live()
-                            ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                            ->columnSpan(1)
-                            ->helperText("How much dust it'll cost to upgrade to Exquisite Imperial."),
-                    ]),
             ])
             ->statePath('data');
     }
 
-    public function setGemDustValues($set, $object, $amount)
+    public function sliceItems(array $items, ?string $from): array
     {
-        $set('upgrade_dust', number_format($object->dust * $amount));
-        $set('melt_dust', number_format(($object->dust / 2) * $amount));
+        if ($from === null) {
+            return [];
+        }
+
+        $keys = array_keys($items);
+        $index = array_search($from, $keys);
+
+        if ($index === 0) {
+            $items = array_slice($items, 1, null, true);
+            return $items;
+        }
+
+        if ($index === false || $index === 0) {
+            return $items;
+        }
+
+        $result = array_slice($items, $index, null, true);
+
+        return dd($result);
     }
 
-    public function setOpalDustValues($set, $amount)
+    public function setDust($get, $set, ?string $value, $from, $to, $amount)
     {
-        /* $upgradeToNextDust = [
-            4500 => 'royal',
-            7875 => 'trapezoid',
-            12375 => 'refined_trapezoid',
-            18000 => 'brilliant_trapezoid',
-            24750 => 'exquisite_trapezoid',
-            32625 => 'imperial',
-            41625 => 'refined_imperial',
-            51750 => 'brilliant_imperial',
-            63000 => 'exquisite_imperial',
-        ];
-
-        $upgradeToMaxDust = [
-            193500 => 'royal',
-            189000 => 'trapezoid',
-            181125 => 'refined_trapezoid',
-            168750 => 'brilliant_trapezoid',
-            150750 => 'exquisite_trapezoid',
-            126000 => 'imperial',
-            93375 => 'refined_imperial',
-            51750 => 'brilliant_imperial',
-            0 => 'exquisite_imperial',
-        ];
-
-        $create_opal_dust = array_search($object, $createDust);
-        $upgrade_opal_dust = array_search($object, $upgradeDust);
-
-        $set('create_opal_dust', number_format($create_opal_dust * $amount));
-        $set('upgrade_opal_dust', number_format($upgrade_opal_dust * $amount)); */
-
-        $opals = [
-            'royal' => 4500,
-            'trapezoid' => 7875,
-            'refined_trapezoid' => 12375,
-            'brilliant_trapezoid' => 18000,
-            'exquisite_trapezoid' => 24750,
-            'imperial' => 32625,
-            'refined_imperial' => 41625,
-            'brilliant_imperial' => 51750,
-            'exquisite_imperial' => 0,
-        ];
-
-        foreach ($opals as $opal => $dust) {
-            $set($opal, number_format($dust * $amount));
+        switch ($get('type')) {
+            case 'gem':
+                $dust = GemTypeEnum::getDust($value);
+                break;
+            case 'jewel':
+                $dust = JewelRarityEnum::getDust($value);
+                break;
+            case 'rune':
+                $dust = RuneRarityEnum::getDust($value);
+                break;
+            case 'opal':
+                $dust = OpalRarityEnum::getDust();
+                break;
+            default:
+                $dust = [];
+                break;
         }
+
+        $keys = array_keys($dust);
+        $fromIndex = array_search($from, $keys);
+        $toIndex = array_search($to, $keys);
+
+        $relevantKeys = array_slice($keys, $fromIndex, $toIndex - $fromIndex);
+
+        $totalDust = 0;
+        foreach ($relevantKeys as $key) {
+            $totalDust += $dust[$key];
+        }
+        $totalDust *= $amount;
+
+
+        $set('upgrade_dust', number_format($totalDust));
+        $set('melt_dust', number_format($totalDust / 2));
     }
 
     public function resetValues($set)
     {
         $set('item', null);
+        $set('from', null);
+        $set('to', null);
         $set('amount', 1);
         $set('upgrade_dust', 0);
         $set('melt_dust', 0);
-        $set('royal', 0);
-        $set('trapezoid', 0);
-        $set('refined_trapezoid', 0);
-        $set('brilliant_trapezoid', 0);
-        $set('exquisite_trapezoid', 0);
-        $set('imperial', 0);
-        $set('refined_imperial', 0);
-        $set('brilliant_imperial', 0);
-        $set('exquisite_imperial', 0);
     }
 }
