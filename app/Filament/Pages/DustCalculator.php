@@ -58,8 +58,8 @@ class DustCalculator extends Page implements HasForms
                             }),
 
                         Forms\Components\Select::make('item')
-                            ->visible(fn(Get $get): bool => filled($get('type')) && $get('type') !== 'opal')
-                            ->options(fn(Get $get): array=> match ($get('type')) {
+                            ->visible(fn (Get $get): bool => filled($get('type')) && $get('type') !== 'opal')
+                            ->options(fn (Get $get): array => match ($get('type')) {
                                 'gem' => GemTypeEnum::toArrayFormatted(),
                                 'jewel' => JewelRarityEnum::getJewels(),
                                 'rune' => RuneRarityEnum::getRunes(),
@@ -68,8 +68,8 @@ class DustCalculator extends Page implements HasForms
                             ->live(),
 
                         Forms\Components\Select::make('from')
-                            ->visible(fn(Get $get): bool => filled($get('item')) || $get('type') === 'opal')
-                            ->options(fn(Get $get): array=> match ($get('type')) {
+                            ->visible(fn (Get $get): bool => filled($get('item')) || $get('type') === 'opal')
+                            ->options(fn (Get $get): array => match ($get('type')) {
                                 'gem' => GemRarityEnum::toArrayUcwords($get('item')),
                                 'jewel' => JewelRarityEnum::toArrayUcwords(),
                                 'rune' => RuneRarityEnum::toArrayUcwords(),
@@ -84,8 +84,8 @@ class DustCalculator extends Page implements HasForms
                             }),
 
                         Forms\Components\Select::make('to')
-                            ->visible(fn(Get $get): bool => filled($get('item')) || $get('type') === 'opal')
-                            ->options(fn(Get $get): array=> match ($get('type')) {
+                            ->visible(fn (Get $get): bool => filled($get('item')) || $get('type') === 'opal')
+                            ->options(fn (Get $get): array => match ($get('type')) {
                                 'gem' => $this->sliceItems(GemRarityEnum::toArrayUcwords($get('item')), $get('from')),
                                 'jewel' => $this->sliceItems(JewelRarityEnum::toArrayUcwords(), $get('from')),
                                 'rune' => $this->sliceItems(RuneRarityEnum::toArrayUcwords(), $get('from')),
@@ -104,7 +104,7 @@ class DustCalculator extends Page implements HasForms
 
                         Forms\Components\TextInput::make('amount')
                             ->default(1)
-                            ->visible(fn(Get $get): bool => filled($get('to')))
+                            ->visible(fn (Get $get): bool => filled($get('to')))
                             ->integer()
                             ->live()
                             ->afterStateUpdated(function ($state, callable $get, callable $set) {
@@ -119,7 +119,7 @@ class DustCalculator extends Page implements HasForms
 
                 Forms\Components\Section::make('Cost')
                     ->columnSpanFull()
-                    ->visible(fn(Get $get): bool => filled($get('to')))
+                    ->visible(fn (Get $get): bool => filled($get('to')))
                     ->collapsible()
                     ->persistCollapsed()
                     ->id('section-cost')
@@ -128,7 +128,7 @@ class DustCalculator extends Page implements HasForms
                             ->readonly()
                             ->live()
                             ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((float) $state))
+                            ->formatStateUsing(fn (string $state): string => number_format((float) $state))
                             ->columnSpan(1)
                             ->helperText("How much dust it'll cost to upgrade."),
 
@@ -136,7 +136,7 @@ class DustCalculator extends Page implements HasForms
                             ->readonly()
                             ->live()
                             ->default(0)
-                            ->formatStateUsing(fn(string $state): string => number_format((float) $state))
+                            ->formatStateUsing(fn (string $state): string => number_format((float) $state))
                             ->columnSpan(1)
                             ->helperText("How much dust it'll give when melted."),
                     ]),
@@ -155,6 +155,7 @@ class DustCalculator extends Page implements HasForms
 
         if ($index === 0) {
             $items = array_slice($items, 1, null, true);
+
             return $items;
         }
 
@@ -198,7 +199,6 @@ class DustCalculator extends Page implements HasForms
             $totalDust += $dust[$key];
         }
         $totalDust *= $amount;
-
 
         $set('upgrade_dust', number_format($totalDust));
         $set('melt_dust', number_format($totalDust / 2));

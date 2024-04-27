@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Rune;
 use App\Enums\RuneRarityEnum;
+use App\Models\Rune;
 use Illuminate\Database\Seeder;
 
 class RuneSeeder extends Seeder
