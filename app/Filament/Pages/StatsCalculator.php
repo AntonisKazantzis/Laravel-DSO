@@ -677,12 +677,12 @@ class StatsCalculator extends Page implements HasForms
         }
 
         // If $state is not set, subtract $gem->value from each attribute
-        if (! $state) {
+        if (!$state) {
             foreach ($attributeValues as &$value) {
                 $value -= $gem->value;
             }
             unset($value); // Unset the reference
-        } elseif (! filled(array_filter($attributeValues))) {
+        } elseif (!filled(array_filter($attributeValues))) {
             // If any attribute is not set, initialize all attributes with $gem->value
             foreach ($attributes as $attribute) {
                 $attributeValues[$attribute] = $gem->value;
@@ -755,33 +755,222 @@ class StatsCalculator extends Page implements HasForms
         }
     }
 
-    public function calculatePercentage($value)
+    public function calculatePercentage($value, $fieldSuffix)
     {
         // Define the percentage mapping
-        $percentageMap = [
-            317441 => 80.00,
-            100 => 0.03,
-            250 => 0.06,
-            500 => 0.13,
-            750 => 0.19,
-            1000 => 0.25,
-            2500 => 0.63,
-            5000 => 1.26,
-            7500 => 1.89,
-            10000 => 2.52,
-            25000 => 6.30,
-            50000 => 12.60,
-            75000 => 18.90,
-            100000 => 25.20,
-            125000 => 31.50,
-            150000 => 37.80,
-            175000 => 44.10,
-            200000 => 50.40,
-            225000 => 56.70,
-            250000 => 63.00,
-            275000 => 69.30,
-            300000 => 75.60,
-        ];
+        switch ($fieldSuffix) {
+            case 'critical_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'block_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'armor_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'fire_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'ice_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'lightning_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'andermagic_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            case 'poison_value':
+                $percentageMap = [
+                    317441 => 80.00,
+                    100 => 0.03,
+                    250 => 0.06,
+                    500 => 0.13,
+                    750 => 0.19,
+                    1000 => 0.25,
+                    2500 => 0.63,
+                    5000 => 1.26,
+                    7500 => 1.89,
+                    10000 => 2.52,
+                    25000 => 6.30,
+                    50000 => 12.60,
+                    75000 => 18.90,
+                    100000 => 25.20,
+                    125000 => 31.50,
+                    150000 => 37.80,
+                    175000 => 44.10,
+                    200000 => 50.40,
+                    225000 => 56.70,
+                    250000 => 63.00,
+                    275000 => 69.30,
+                    300000 => 75.60,
+                ];
+                break;
+            default:
+                $percentageMap = [0 => 00.00];
+                break;
+        }
 
         // Find the closest value in the array to the given value
         $closestValue = null;
@@ -795,8 +984,10 @@ class StatsCalculator extends Page implements HasForms
 
         // Calculate the percentage based on the closest value
         $percentage = ($value / $closestValue) * $closestPercentage;
+        $rounded = round($percentage, 2);
+        $result = $rounded . '%';
 
-        return $percentage;
+        return $result;
     }
 
     public function applyBuff($state, $get, $set, $old, $buffs)
@@ -805,7 +996,7 @@ class StatsCalculator extends Page implements HasForms
         $lastItem = end($state);
 
         // Append the last item from $state to $backupState only if it's not already in the backupState
-        if (! in_array($lastItem, $this->backupState)) {
+        if (!in_array($lastItem, $this->backupState)) {
             array_push($this->backupState, $lastItem);
         }
 
@@ -853,10 +1044,23 @@ class StatsCalculator extends Page implements HasForms
             'steam_regeneration',
         ];
 
+        $percentageFields = [
+            'critical_value',
+            'block_value',
+            'armor_value',
+            'fire_value',
+            'ice_value',
+            'lightning_value',
+            'andermagic_value',
+            'poison_value',
+        ];
+
         // Iterate over each field and its multiplier in the current case
         foreach ($case as $fieldSuffix => $multiplier) {
             foreach (['ranger_', 'dragonknight_', 'spellweaver_', 'steam_mechanicus_'] as $prefix) {
-                $fullFieldName = $prefix.$fieldSuffix; // Generate the full field name
+                // Generate the full field name
+                $fullFieldName = $prefix . $fieldSuffix;
+                $fullPercentageFieldValue = in_array($fieldSuffix, $percentageFields) ? "{$fullFieldName}_percentage" : '';
 
                 // Get the current field value
                 $fieldValue = $get($fullFieldName);
@@ -875,7 +1079,10 @@ class StatsCalculator extends Page implements HasForms
 
                 // Format the updated value and set it
                 $formattedValue = in_array($fieldSuffix, $floatFields) ? number_format($updatedValue, 3) : number_format($updatedValue, 0);
+                $percentageValue = $this->calculatePercentage($updatedValue, $fieldSuffix);
+
                 $set($fullFieldName, $formattedValue);
+                $set($fullPercentageFieldValue, $percentageValue);
             }
         }
     }
@@ -889,14 +1096,14 @@ class StatsCalculator extends Page implements HasForms
                     ->label('Base Damage')
                     ->live()
                     ->columnSpanFull()
-                    ->default(fn (Get $get): int => match ($characterClassName) {
+                    ->default(fn(Get $get): int => match ($characterClassName) {
                         'dragonknight' => 16800,
                         'spellweaver' => 50400,
                         'ranger' => 29400,
                         'steam_mechanicus' => 38640,
                         default => 0,
                     })
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_attacks_per_second")
@@ -904,7 +1111,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(1)
-                    ->formatStateUsing(fn ($state) => number_format((float) $state, 3, '.', ''))
+                    ->formatStateUsing(fn($state) => number_format((float) $state, 3, '.', ''))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_critical_value")
@@ -912,7 +1119,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_movement_speed")
@@ -920,7 +1127,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(5)
-                    ->formatStateUsing(fn ($state) => number_format((float) $state, 3, '.', ''))
+                    ->formatStateUsing(fn($state) => number_format((float) $state, 3, '.', ''))
                     ->readonly(),
             ],
             'Defensive Values' => [
@@ -928,14 +1135,14 @@ class StatsCalculator extends Page implements HasForms
                     ->label('Health Points')
                     ->live()
                     ->columnSpanFull()
-                    ->default(fn (Get $get): int => match ($characterClassName) {
+                    ->default(fn(Get $get): int => match ($characterClassName) {
                         'dragonknight' => 450000,
                         'spellweaver' => 150000,
                         'ranger' => 345000,
                         'steam_mechanicus' => 262500,
                         default => 0,
                     })
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_health_points_regeneration")
@@ -943,7 +1150,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(0)
-                    ->formatStateUsing(fn ($state) => number_format((float) $state, 2, '.', ''))
+                    ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_block_value")
@@ -951,15 +1158,15 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
-                Forms\Components\TextInput::make("{$characterClassName}_critical_value_percentage")
+                Forms\Components\TextInput::make("{$characterClassName}_block_value_percentage")
                     ->label('Percentage Value')
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_armor_value")
@@ -967,7 +1174,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_armor_value_percentage")
@@ -975,7 +1182,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_fire_value")
@@ -983,7 +1190,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_fire_value_percentage")
@@ -991,7 +1198,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_ice_value")
@@ -999,7 +1206,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_ice_value_percentage")
@@ -1007,7 +1214,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_lightning_value")
@@ -1015,7 +1222,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_lightning_value_percentage")
@@ -1023,7 +1230,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_andermagic_value")
@@ -1031,7 +1238,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_andermagic_value_percentage")
@@ -1039,7 +1246,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_poison_value")
@@ -1047,7 +1254,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_poison_value_percentage")
@@ -1055,7 +1262,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpan(1)
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                     ->readonly(),
             ],
             'Other Values' => [
@@ -1064,7 +1271,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(100)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_honor_gain")
@@ -1072,7 +1279,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(100)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_andermant_drop_stack_size")
@@ -1080,7 +1287,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_coin_drop_stack_size")
@@ -1088,7 +1295,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_ancient_wisdom_drop_stack_size")
@@ -1096,7 +1303,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
 
                 Forms\Components\TextInput::make("{$characterClassName}_materi_fragment_drop_stack_size")
@@ -1104,7 +1311,7 @@ class StatsCalculator extends Page implements HasForms
                     ->live()
                     ->columnSpanFull()
                     ->default(0)
-                    ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                     ->readonly(),
             ],
         ];
@@ -1118,7 +1325,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpan(1)
                         ->default(0)
-                        ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_concentration_points")
@@ -1126,7 +1333,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(100)
-                        ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_concentration_regeneration")
@@ -1134,7 +1341,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(0)
-                        ->formatStateUsing(fn ($state) => number_format((float) $state, 2, '.', ''))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
                         ->readonly(),
                 ]);
                 break;
@@ -1145,7 +1352,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpan(1)
                         ->default(0)
-                        ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_rage_points")
@@ -1153,7 +1360,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(100)
-                        ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                         ->readonly(),
                 ]);
                 break;
@@ -1164,7 +1371,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpan(1)
                         ->default(0)
-                        ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_mana_points")
@@ -1172,7 +1379,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(100)
-                        ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_mana_regeneration")
@@ -1180,7 +1387,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(0)
-                        ->formatStateUsing(fn ($state) => number_format((float) $state, 2, '.', ''))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
                         ->readonly(),
                 ]);
                 break;
@@ -1191,7 +1398,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpan(1)
                         ->default(0)
-                        ->formatStateUsing(fn (string $state): string => number_format((float) $state, 2).'%')
+                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_steam_points")
@@ -1199,7 +1406,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(100)
-                        ->formatStateUsing(fn (string $state): string => number_format((int) $state))
+                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
                         ->readonly(),
 
                     Forms\Components\TextInput::make("{$characterClassName}_steam_regeneration")
@@ -1207,7 +1414,7 @@ class StatsCalculator extends Page implements HasForms
                         ->live()
                         ->columnSpanFull()
                         ->default(0)
-                        ->formatStateUsing(fn ($state) => number_format((float) $state, 2, '.', ''))
+                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
                         ->readonly(),
                 ]);
                 break;
