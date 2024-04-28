@@ -165,7 +165,7 @@ class DustCalculator extends Page implements HasForms
 
         $result = array_slice($items, $index, null, true);
 
-        return dd($result);
+        return $result;
     }
 
     public function setDust($get, $set, ?string $value, $from, $to, $amount)
