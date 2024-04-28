@@ -252,15 +252,17 @@ class StatsCalculator extends Page implements HasForms
                                             ->live()
                                             ->columnSpanFull()
                                             ->options([
-                                                'blood_mage' => 'Blood Mage',
-                                                'furious_battle_cry' => 'Furious Battle Cry',
-                                                'immovable_wall' => 'Immovable Wall',
-                                                'dragon_hide' => 'Dragon Hide',
-                                                'quick_striker' => 'Quick Striker',
-                                                'engineer' => 'Engineer',
+                                                'blood_mage' => 'Blood Mage (Spellweaver)',
+                                                'wolf' => 'Wolf (Ranger)',
+                                                'furious_battle_cry' => 'Furious Battle Cry (Dragonknight)',
+                                                'immovable_wall' => 'Immovable Wall (Dragonknight)',
+                                                'dragon_hide' => 'Dragon Hide (Dragonknight)',
+                                                'quick_striker' => 'Quick Striker (Dragonknight)',
+                                                'engineer' => 'Engineer (Steam Mechanicus)',
                                             ])
                                             ->descriptions([
                                                 'blood_mage' => '+50% damage',
+                                                'wolf' => '+25% damage',
                                                 'furious_battle_cry' => new HtmlString('+50% movement speed</br> +50% damage'),
                                                 'immovable_wall' => '+70% armor',
                                                 'dragon_hide' => new HtmlString('+70% armor value</br> +70% elemental resistance values'),
@@ -271,6 +273,7 @@ class StatsCalculator extends Page implements HasForms
                                                 $buffs = [
                                                     'multiplication' => [
                                                         'blood_mage' => ['base_damage' => 1.5],
+                                                        'wolf' => ['base_damage' => 1.25],
                                                         'furious_battle_cry' => ['movement_speed' => 1.5, 'base_damage' => 1.5],
                                                         'immovable_wall' => ['armor_value' => 1.7],
                                                         'dragon_hide' => ['ice' => 1.14, 'fire' => 1.14, 'andermagic' => 1.14, 'poison' => 1.14, 'lightning' => 1.14, 'armor_value' => 1.7],
