@@ -146,60 +146,68 @@ class DustCalculator extends Page implements HasForms
 
     public function sliceItems(array $items, ?string $from): array
     {
+        // If $from is null, return an empty array
         if ($from === null) {
             return [];
         }
 
-        $keys = array_keys($items);
-        $index = array_search($from, $keys);
+        // Find the index of $from in the keys of $items
+        $index = array_search($from, array_keys($items), true);
 
-        if ($index === 0) {
-            $items = array_slice($items, 1, null, true);
-
-            return $items;
-        }
-
+        // If $from is not found or is the first element, return the original $items array
         if ($index === false || $index === 0) {
             return $items;
         }
 
-        $result = array_slice($items, $index, null, true);
-
-        return $result;
+        // Return a slice of $items starting from the index of $from
+        return array_slice($items, $index, null, true);
     }
 
     public function setDust($get, $set, ?string $value, $from, $to, $amount)
     {
+        // Determine the type of item (gem, jewel, rune, opal)
         switch ($get('type')) {
             case 'gem':
+                // Get the dust values for the specified gem type
                 $dust = GemTypeEnum::getDust($value);
                 break;
             case 'jewel':
+                // Get the dust values for the specified jewel type
                 $dust = JewelRarityEnum::getDust($value);
                 break;
             case 'rune':
+                // Get the dust values for the specified rune type
                 $dust = RuneRarityEnum::getDust($value);
                 break;
             case 'opal':
+                // Get the dust values for opal
                 $dust = OpalRarityEnum::getDust();
                 break;
             default:
+                // Default to an empty array if item type is not recognized
                 $dust = [];
                 break;
         }
 
+        // Extract the keys of the dust array
         $keys = array_keys($dust);
+        // Find the index of $from and $to in the dust keys
         $fromIndex = array_search($from, $keys);
         $toIndex = array_search($to, $keys);
 
+        // Extract relevant keys based on the specified range
         $relevantKeys = array_slice($keys, $fromIndex, $toIndex - $fromIndex);
 
+        // Initialize total dust amount
         $totalDust = 0;
+        // Calculate total dust by summing up the relevant dust values
         foreach ($relevantKeys as $key) {
             $totalDust += $dust[$key];
         }
+        // Multiply total dust by the specified amount
         $totalDust *= $amount;
 
+        // Set the formatted total dust values in the state
         $set('upgrade_dust', number_format($totalDust));
         $set('melt_dust', number_format($totalDust / 2));
     }

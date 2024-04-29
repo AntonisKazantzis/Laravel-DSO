@@ -182,23 +182,35 @@ class RunsCalculator extends Page implements HasForms
             ->statePath('data');
     }
 
+    // Set the fragments based on category, portal, difficulty, and amount.
     public function setFragments($set, $category, $portal, $difficulty, $amount)
     {
+        // Initialize variables
+        $realm_fragments = 0;
+        $andermants = 0;
+        $infernal_passages = 0;
+        $key_of_prowess = 0;
+
+        // Calculate total portal value
+        $totalPortal = $portal * $amount;
+
+        // Define fragment values based on category
         switch ($category) {
             case 'travel_items':
-                $realm_fragments = [
+                // Define fragment values for travel items category
+                $realm_fragments_map = [
                     4 => 1,
                     20 => 5,
                     40 => 10,
                 ];
 
-                $andermants = [
+                $andermants_map = [
                     199 => 1,
                     995 => 5,
                     1990 => 10,
                 ];
 
-                $key_of_prowess = [
+                $key_of_prowess_map = [
                     0 => 0,
                     1 => 1,
                     2 => 2,
@@ -208,7 +220,7 @@ class RunsCalculator extends Page implements HasForms
                     10 => 6,
                 ];
 
-                $portal_cost = [
+                $portal_cost_map = [
                     1 => 0,
                     2 => 1,
                     3 => 2,
@@ -218,42 +230,34 @@ class RunsCalculator extends Page implements HasForms
                     9 => 6,
                 ];
 
-                $realm_fragments = array_search($portal, $realm_fragments);
-                $andermants = array_search($portal, $andermants);
-                $portal_cost = array_search($difficulty, $portal_cost);
-                $key_of_prowess = array_search($difficulty, $key_of_prowess);
-
-                $totalPortal = $portal * $amount;
+                $portal_cost = array_search($difficulty, $portal_cost_map);
+                $key_of_prowess = array_search($difficulty, $key_of_prowess_map);
 
                 if ($totalPortal >= 9 && $difficulty == 6) {
-                    $infernalPassageCount = floor($totalPortal / $portal_cost);
-                    $infernal_passages = 10 * $infernalPassageCount;
-                } else {
-                    $infernal_passages = 0;
+                    $infernal_passages = 10;
                 }
 
                 if ($totalPortal >= 2 && $difficulty !== 0) {
-                    $keyOfProwessCount = floor($totalPortal / $portal_cost);
+                    $keyOfProwessCount = round($totalPortal / $portal_cost);
                     $key_of_prowess *= $keyOfProwessCount;
-                } else {
-                    $key_of_prowess = 0;
                 }
 
                 break;
             case 'event_travel_items':
-                $realm_fragments = [
+                // Define fragment values for event travel items category
+                $realm_fragments_map = [
                     10 => 1,
                     49 => 5,
                     98 => 10,
                 ];
 
-                $andermants = [
+                $andermants_map = [
                     499 => 1,
                     2495 => 5,
                     4990 => 10,
                 ];
 
-                $portal_cost = [
+                $portal_cost_map = [
                     1 => 0,
                     1 => 1,
                     1 => 2,
@@ -263,59 +267,53 @@ class RunsCalculator extends Page implements HasForms
                     5 => 6,
                 ];
 
-                $realm_fragments = array_search($portal, $realm_fragments);
-                $andermants = array_search($portal, $andermants);
-                $portal_cost = array_search($difficulty, $portal_cost);
-
-                $totalPortal = $portal * $amount;
+                $portal_cost = array_search($difficulty, $portal_cost_map);
 
                 if ($totalPortal >= 9 && $difficulty == 6) {
-                    $infernalPassageCount = floor($totalPortal / $portal_cost);
-                    $infernal_passages = 10 * $infernalPassageCount;
-                } else {
-                    $infernal_passages = 0;
+                    $infernal_passages = 10;
                 }
 
-                $key_of_prowess = 0;
                 break;
             case 'pw_travel_items':
-                $realm_fragments = [
+                // Define fragment values for PW travel items category
+                $realm_fragments_map = [
                     8 => 5,
                     16 => 10,
                     130 => 100,
                 ];
 
-                $andermants = [
+                $andermants_map = [
                     400 => 5,
                     770 => 10,
                     6300 => 100,
                 ];
 
-                $realm_fragments = array_search($portal, $realm_fragments);
-                $andermants = array_search($portal, $andermants);
+                $portal_cost_map = [
+                    25 => 0,
+                    25 => 1,
+                    25 => 2,
+                ];
 
-                $totalPortal = $portal * $amount;
+                $portal_cost = array_search($difficulty, $portal_cost_map);
 
                 if ($totalPortal >= 25 && $difficulty == 2) {
-                    $infernalPassageCount = floor($totalPortal / 25);
-                    $infernal_passages = 15 * $infernalPassageCount;
-                } else {
-                    $infernal_passages = 0;
+                    $infernal_passages = 15;
                 }
 
-                $key_of_prowess = 0;
-                break;
-            default:
-                $realm_fragments = 0;
-                $andermants = 0;
-                $infernal_passages = 0;
-                $key_of_prowess = 0;
                 break;
         }
 
+        // Calculate realm fragments and andermants
+        $realm_fragments = array_search($portal, $realm_fragments_map);
+        $andermants = array_search($portal, $andermants_map);
         $realm_fragments *= $amount;
         $andermants *= $amount;
 
+        // Calculate infernal passages based on total portal count and difficulty
+        $infernalPassageCount = round($totalPortal / $portal_cost);
+        $infernal_passages *= $infernalPassageCount;
+
+        // Set formatted fragment values
         $set('realm_fragments', number_format($realm_fragments));
         $set('andermants', number_format($andermants));
         $set('infernal_passages', number_format($infernal_passages));

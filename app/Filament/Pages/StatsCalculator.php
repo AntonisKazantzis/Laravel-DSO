@@ -622,90 +622,71 @@ class StatsCalculator extends Page implements HasForms
 
     public function updateGemAttributes($state, $get, $set, $old)
     {
+        // Find the appropriate gem based on the state or old value
         $gem = $state ? Gem::find($state) : Gem::find($old);
+        $gemType = $gem->type->value; // Get the type of the gem
 
-        switch ($gem->type->value) {
-            case 'ruby':
-                $attributes = ['ranger_base_damage', 'dragonknight_base_damage', 'spellweaver_base_damage', 'steam_mechanicus_base_damage'];
-                break;
-            case 'onyx':
-                $attributes = ['ranger_critical_value', 'dragonknight_critical_value', 'spellweaver_critical_value', 'steam_mechanicus_critical_value'];
-                break;
-            case 'zircon':
-                $attributes = ['ranger_attacks_per_second', 'dragonknight_attacks_per_second', 'spellweaver_attacks_per_second', 'steam_mechanicus_attacks_per_second'];
-                break;
-            case 'rhodolite':
-                $attributes = ['ranger_movement_speed', 'dragonknight_movement_speed', 'spellweaver_movement_speed', 'steam_mechanicus_movement_speed'];
-                break;
-            case 'diamond':
-                $attributes = ['ranger_all_resistance_values', 'dragonknight_all_resistance_values', 'spellweaver_all_resistance_values', 'steam_mechanicus_all_resistance_values'];
-                break;
-            case 'diamond_fire':
-                $attributes = ['ranger_fire', 'dragonknight_fire', 'spellweaver_fire', 'steam_mechanicus_fire'];
-                break;
-            case 'diamond_ice':
-                $attributes = ['ranger_ice', 'dragonknight_ice', 'spellweaver_ice', 'steam_mechanicus_ice'];
-                break;
-            case 'diamond_andermagic':
-                $attributes = ['ranger_andermagic', 'dragonknight_andermagic', 'spellweaver_andermagic', 'steam_mechanicus_andermagic'];
-                break;
-            case 'diamond_poison':
-                $attributes = ['ranger_poison', 'dragonknight_poison', 'spellweaver_poison', 'steam_mechanicus_poison'];
-                break;
-            case 'diamond_lightning':
-                $attributes = ['ranger_lightning', 'dragonknight_lightning', 'spellweaver_lightning', 'steam_mechanicus_lightning'];
-                break;
-            case 'amethyst':
-                $attributes = ['ranger_health_points', 'dragonknight_health_points', 'spellweaver_health_points', 'steam_mechanicus_health_points'];
-                break;
-            case 'cyanite':
-                $attributes = ['ranger_armor_value', 'dragonknight_armor_value', 'spellweaver_armor_value', 'steam_mechanicus_armor_value'];
-                break;
-            case 'emerald':
-                $attributes = ['ranger_block_value', 'dragonknight_block_value', 'spellweaver_block_value', 'steam_mechanicus_block_value'];
-                break;
-            default:
-                $attributes = [];
-        }
-
-        $floatFields = [
-            'zircon',
-            'rhodolite',
+        // Define mapping of gem types to their corresponding attributes
+        $attributeMap = [
+            'ruby' => ['ranger_base_damage', 'dragonknight_base_damage', 'spellweaver_base_damage', 'steam_mechanicus_base_damage'],
+            'onyx' => ['ranger_critical_value', 'dragonknight_critical_value', 'spellweaver_critical_value', 'steam_mechanicus_critical_value'],
+            'zircon' => ['ranger_attacks_per_second', 'dragonknight_attacks_per_second', 'spellweaver_attacks_per_second', 'steam_mechanicus_attacks_per_second'],
+            'rhodolite' => ['ranger_movement_speed', 'dragonknight_movement_speed', 'spellweaver_movement_speed', 'steam_mechanicus_movement_speed'],
+            'diamond' => ['ranger_all_resistance_values', 'dragonknight_all_resistance_values', 'spellweaver_all_resistance_values', 'steam_mechanicus_all_resistance_values'],
+            'diamond_fire' => ['ranger_fire', 'dragonknight_fire', 'spellweaver_fire', 'steam_mechanicus_fire'],
+            'diamond_ice' => ['ranger_ice', 'dragonknight_ice', 'spellweaver_ice', 'steam_mechanicus_ice'],
+            'diamond_andermagic' => ['ranger_andermagic', 'dragonknight_andermagic', 'spellweaver_andermagic', 'steam_mechanicus_andermagic'],
+            'diamond_poison' => ['ranger_poison', 'dragonknight_poison', 'spellweaver_poison', 'steam_mechanicus_poison'],
+            'diamond_lightning' => ['ranger_lightning', 'dragonknight_lightning', 'spellweaver_lightning', 'steam_mechanicus_lightning'],
+            'amethyst' => ['ranger_health_points', 'dragonknight_health_points', 'spellweaver_health_points', 'steam_mechanicus_health_points'],
+            'cyanite' => ['ranger_armor_value', 'dragonknight_armor_value', 'spellweaver_armor_value', 'steam_mechanicus_armor_value'],
+            'emerald' => ['ranger_block_value', 'dragonknight_block_value', 'spellweaver_block_value', 'steam_mechanicus_block_value'],
         ];
 
+        // Get the attributes for the current gem type or default to an empty array
+        $attributes = $attributeMap[$gemType] ?? [];
+
+        // Define fields that should be treated as float values
+        $floatFields = ['zircon', 'rhodolite'];
+
+        // Initialize an array to store attribute values
         $attributeValues = [];
+
+        // Loop through each attribute and convert its value to integer or float
         foreach ($attributes as $attribute) {
-            // Remove commas and convert to integer
-            $attributeValues[$attribute] = in_array($gem->type->value, $floatFields) ? (float) $get($attribute) : (int) str_replace(',', '', $get($attribute));
+            $value = in_array($gemType, $floatFields) ? (float) str_replace(',', '', $get($attribute)) : (int) str_replace(',', '', $get($attribute));
+            $attributeValues[$attribute] = $value;
         }
 
-        // If $state is not set, subtract $gem->value from each attribute
-        if (!$state) {
-            foreach ($attributeValues as &$value) {
-                $value -= $gem->value;
-            }
-            unset($value); // Unset the reference
-        } elseif (!filled(array_filter($attributeValues))) {
-            // If any attribute is not set, initialize all attributes with $gem->value
-            foreach ($attributes as $attribute) {
-                $attributeValues[$attribute] = $gem->value;
-            }
-        } else {
-            // Otherwise, add $gem->value to each attribute
+        // Adjust attribute values based on state and gem value
+        if (! $state || ! filled(array_filter($attributeValues))) {
+            // If state is not set or any attribute is not set, initialize all attributes with the gem value
+            $defaultValue = $gem->value;
+            $attributeValues = array_fill_keys($attributes, $defaultValue);
+        } elseif ($state) {
+            // If state is set, add gem value to each attribute
             foreach ($attributeValues as &$value) {
                 $value += $gem->value;
+            }
+            unset($value); // Unset the reference
+        } else {
+            // If state is not set, subtract gem value from each attribute
+            foreach ($attributeValues as &$value) {
+                $value -= $gem->value;
             }
             unset($value); // Unset the reference
         }
 
         // Format the result and set it in the state
         foreach ($attributeValues as $attribute => $value) {
-            $formatted_value = in_array($gem->type->value, $floatFields) ? number_format($value, 3) : number_format($value, 0);
+            // Format the value based on the field type
+            $formatted_value = in_array($gemType, $floatFields) ? number_format($value, 3) : number_format($value, 0);
+            // Set the formatted value in the state
             $set($attribute, $formatted_value);
         }
     }
 
-    public function createGemSelectComponent($tabName, $slotNumber)
+    private function createGemSelectComponent($tabName, $slotNumber)
     {
         return Forms\Components\Select::make("{$tabName}_gem_slot_{$slotNumber}")
             ->label("Gem Slot {$slotNumber}")
@@ -723,9 +704,15 @@ class StatsCalculator extends Page implements HasForms
 
     public function createGemTabSchema($tabName, $numberOfSlots)
     {
+        // Initialize an empty array to store the schema
         $schema = [];
+
+        // Loop through each slot in the gem tab
         for ($i = 1; $i <= $numberOfSlots; $i++) {
+            // Generate a unique field key for each slot
             $fieldKey = "{$tabName}_gem_slot_{$i}";
+
+            // Create a gem select component for the current slot and add it to the schema
             $schema[] = $this->createGemSelectComponent($tabName, $i)->key($fieldKey);
         }
 
@@ -734,8 +721,13 @@ class StatsCalculator extends Page implements HasForms
 
     public function createClassTabSchema($tabName, $fieldsFunction, $characterClassName)
     {
+        // Initialize an empty array to store the schema
         $schema = [];
+
+        // Retrieve the fields for the specified character class using the provided function
         $fields = $fieldsFunction($characterClassName);
+
+        // Iterate over each section of fields and create a section schema
         foreach ($fields as $sectionName => $sectionFields) {
             $schema[] = $this->createClassSectionSchema($sectionName, $sectionFields);
         }
@@ -745,6 +737,7 @@ class StatsCalculator extends Page implements HasForms
 
     public function createClassSectionSchema($sectionName, $fields)
     {
+        // Create a section schema with the given section name, split into two columns, and containing the provided fields
         return Forms\Components\Section::make($sectionName)
             ->columns(2)
             ->schema($fields);
@@ -752,15 +745,19 @@ class StatsCalculator extends Page implements HasForms
 
     public function updateFields(callable $get, callable $set, array $fields)
     {
+        // Iterate over each field and its corresponding multiplier
         foreach ($fields as $field => $multiplier) {
+            // Retrieve the current value of the field and convert it to an integer
             $base_damage = (int) str_replace(',', '', $get($field));
+
+            // Multiply the base damage by the multiplier and format the result
             $set($field, number_format($base_damage * $multiplier));
         }
     }
 
     public function calculatePercentage($value, $fieldSuffix)
     {
-        // Define the percentage mapping
+        // Define the percentage mapping for different field suffixes
         switch ($fieldSuffix) {
             case 'critical_value':
                 $percentageMap = [
@@ -987,8 +984,12 @@ class StatsCalculator extends Page implements HasForms
 
         // Calculate the percentage based on the closest value
         $percentage = ($value / $closestValue) * $closestPercentage;
+
+        // Round the percentage to two decimal places
         $rounded = round($percentage, 2);
-        $result = $rounded . '%';
+
+        // Format the result as a percentage string
+        $result = $rounded.'%';
 
         return $result;
     }
@@ -999,11 +1000,11 @@ class StatsCalculator extends Page implements HasForms
         $lastItem = end($state);
 
         // Append the last item from $state to $backupState only if it's not already in the backupState
-        if (!in_array($lastItem, $this->backupState)) {
+        if (! in_array($lastItem, $this->backupState)) {
             array_push($this->backupState, $lastItem);
         }
 
-        // Determine which set of buffs to use based on $state or $old
+        // Get the current backup state key
         // $currentState = is_array($state) ? end($state) : $state;
         // $currentOld = is_array($old) ? end($old) : $old;
         $currentBackupOld = is_array($this->backupState) ? end($this->backupState) : $this->backupState;
@@ -1016,13 +1017,13 @@ class StatsCalculator extends Page implements HasForms
         $removedItem = array_diff($this->backupState, $state);
         $this->backupState = array_diff($this->backupState, $removedItem);
 
+        // Get the count of removed items and current state items
         $countRemovedItem = empty($removedItem) ? 0 : count($removedItem);
         $countState = empty($state) ? 0 : count($state);
 
         // Adjusted logic to handle multiple items in $removedItem
         if ($countState > 1) {
             if ($countRemovedItem > 1) {
-                // array_reverse($removedItem);
                 array_pop($removedItem);
             }
             $removedItemKey = end($removedItem);
@@ -1032,12 +1033,14 @@ class StatsCalculator extends Page implements HasForms
             $currentBackupOldKey = $currentBackupOld;
         }
 
+        // Determine the case (multiplication or addition) based on removed item or current backup old key
         if (isset($buffs['multiplication'][$removedItemKey]) || isset($buffs['multiplication'][$currentBackupOldKey])) {
             $case = isset($buffs['multiplication'][$removedItemKey]) ? $buffs['multiplication'][$removedItemKey] : $buffs['multiplication'][$currentBackupOldKey];
         } else {
             $case = isset($buffs['addition'][$removedItemKey]) ? $buffs['addition'][$removedItemKey] : $buffs['addition'][$currentBackupOldKey];
         }
 
+        // Define field types requiring float or percentage conversion
         $floatFields = [
             'attacks_per_second',
             'movement_speed',
@@ -1062,7 +1065,7 @@ class StatsCalculator extends Page implements HasForms
         foreach ($case as $fieldSuffix => $multiplier) {
             foreach (['ranger_', 'dragonknight_', 'spellweaver_', 'steam_mechanicus_'] as $prefix) {
                 // Generate the full field name
-                $fullFieldName = $prefix . $fieldSuffix;
+                $fullFieldName = $prefix.$fieldSuffix;
                 $fullPercentageFieldValue = in_array($fieldSuffix, $percentageFields) ? "{$fullFieldName}_percentage" : '';
 
                 // Get the current field value
@@ -1090,232 +1093,56 @@ class StatsCalculator extends Page implements HasForms
         }
     }
 
-    // Define the function to create fields
     public function createClassFields($characterClassName)
     {
+        $defaultBaseDamage = match ($characterClassName) {
+            'dragonknight' => 16800,
+            'spellweaver' => 50400,
+            'ranger' => 29400,
+            'steam_mechanicus' => 38640,
+            default => 0,
+        };
+
+        $defaultHealthPoints = match ($characterClassName) {
+            'dragonknight' => 450000,
+            'spellweaver' => 150000,
+            'ranger' => 345000,
+            'steam_mechanicus' => 262500,
+            default => 0,
+        };
+
         $fields = [
             'Offensive Values' => [
-                Forms\Components\TextInput::make("{$characterClassName}_base_damage")
-                    ->label('Base Damage')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(fn(Get $get): int => match ($characterClassName) {
-                        'dragonknight' => 16800,
-                        'spellweaver' => 50400,
-                        'ranger' => 29400,
-                        'steam_mechanicus' => 38640,
-                        default => 0,
-                    })
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_attacks_per_second")
-                    ->label('Attacks Per Second')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(1)
-                    ->formatStateUsing(fn($state) => number_format((float) $state, 3, '.', ''))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_critical_value")
-                    ->label('Critical Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_movement_speed")
-                    ->label('Movement Speed')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(5)
-                    ->formatStateUsing(fn($state) => number_format((float) $state, 3, '.', ''))
-                    ->readonly(),
+                $this->createTextInput("{$characterClassName}_base_damage", 'Base Damage', $defaultBaseDamage),
+                $this->createTextInput("{$characterClassName}_attacks_per_second", 'Attacks Per Second', 1.000),
+                $this->createTextInput("{$characterClassName}_critical_value", 'Critical Value', 0, 1),
+                $this->createTextInput("{$characterClassName}_movement_speed", 'Movement Speed', 5.000),
             ],
             'Defensive Values' => [
-                Forms\Components\TextInput::make("{$characterClassName}_health_points")
-                    ->label('Health Points')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(fn(Get $get): int => match ($characterClassName) {
-                        'dragonknight' => 450000,
-                        'spellweaver' => 150000,
-                        'ranger' => 345000,
-                        'steam_mechanicus' => 262500,
-                        default => 0,
-                    })
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_health_points_regeneration")
-                    ->label('Health Points Regeneration')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(0)
-                    ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_block_value")
-                    ->label('Block Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_block_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_armor_value")
-                    ->label('Armor Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_armor_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_fire_value")
-                    ->label('Fire')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_fire_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_ice_value")
-                    ->label('Ice')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_ice_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_lightning_value")
-                    ->label('Lightning')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_lightning_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_andermagic_value")
-                    ->label('Andermagic')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_andermagic_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_poison_value")
-                    ->label('Poison')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_poison_value_percentage")
-                    ->label('Percentage Value')
-                    ->live()
-                    ->columnSpan(1)
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                    ->readonly(),
+                $this->createTextInput("{$characterClassName}_health_points", 'Health Points', $defaultHealthPoints),
+                $this->createTextInput("{$characterClassName}_health_points_regeneration", 'Health Points Regeneration', 0),
+                $this->createTextInput("{$characterClassName}_block_value", 'Block Value', 0, 1),
+                $this->createTextInput("{$characterClassName}_block_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_armor_value", 'Armor Value', 0, 1),
+                $this->createTextInput("{$characterClassName}_armor_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_fire_value", 'Fire', 0, 1),
+                $this->createTextInput("{$characterClassName}_fire_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_ice_value", 'Ice', 0, 1),
+                $this->createTextInput("{$characterClassName}_ice_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_lightning_value", 'Lightning', 0, 1),
+                $this->createTextInput("{$characterClassName}_lightning_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_andermagic_value", 'Andermagic', 0, 1),
+                $this->createTextInput("{$characterClassName}_andermagic_value_percentage", 'Percentage Value', 0.00, 1),
+                $this->createTextInput("{$characterClassName}_poison_value", 'Poison', 0, 1),
+                $this->createTextInput("{$characterClassName}_poison_value_percentage", 'Percentage Value', 0.00, 1),
             ],
             'Other Values' => [
-                Forms\Components\TextInput::make("{$characterClassName}_xp_gain")
-                    ->label('Xp Gain')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(100)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_honor_gain")
-                    ->label('Honor Gain')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(100)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_andermant_drop_stack_size")
-                    ->label('Andermant Drop Stack Size')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_coin_drop_stack_size")
-                    ->label('Coin Drop Stack Size')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_ancient_wisdom_drop_stack_size")
-                    ->label('Ancient Wisdom Drop Stack Size')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
-
-                Forms\Components\TextInput::make("{$characterClassName}_materi_fragment_drop_stack_size")
-                    ->label('Materi Fragment Drop Stack Size')
-                    ->live()
-                    ->columnSpanFull()
-                    ->default(0)
-                    ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                    ->readonly(),
+                $this->createTextInput("{$characterClassName}_xp_gain", 'Xp Gain', 100),
+                $this->createTextInput("{$characterClassName}_honor_gain", 'Honor Gain', 100),
+                $this->createTextInput("{$characterClassName}_andermant_drop_stack_size", 'Andermant Drop Stack Size', 0),
+                $this->createTextInput("{$characterClassName}_coin_drop_stack_size", 'Coin Drop Stack Size', 0),
+                $this->createTextInput("{$characterClassName}_ancient_wisdom_drop_stack_size", 'Ancient Wisdom Drop Stack Size', 0),
+                $this->createTextInput("{$characterClassName}_materi_fragment_drop_stack_size", 'Materi Fragment Drop Stack Size', 0),
             ],
         ];
 
@@ -1323,102 +1150,29 @@ class StatsCalculator extends Page implements HasForms
         switch ($characterClassName) {
             case 'ranger':
                 array_splice($fields['Offensive Values'], 3, 0, [
-                    Forms\Components\TextInput::make("{$characterClassName}_critical_value_percentage")
-                        ->label('Percentage Value')
-                        ->live()
-                        ->columnSpan(1)
-                        ->default(0)
-                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_concentration_points")
-                        ->label('Concentration Points')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(100)
-                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_concentration_regeneration")
-                        ->label('Concentration Regeneration')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(0)
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
-                        ->readonly(),
+                    $this->createTextInput("{$characterClassName}_critical_value_percentage", 'Percentage Value', 0.00, 1),
+                    $this->createTextInput("{$characterClassName}_concentration_points", 'Concentration Points', 100),
+                    $this->createTextInput("{$characterClassName}_concentration_regeneration", 'Concentration Regeneration', 0),
                 ]);
                 break;
             case 'dragonknight':
                 array_splice($fields['Offensive Values'], 3, 0, [
-                    Forms\Components\TextInput::make("{$characterClassName}_critical_value_percentage")
-                        ->label('Percentage Value')
-                        ->live()
-                        ->columnSpan(1)
-                        ->default(0)
-                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_rage_points")
-                        ->label('Rage Points')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(100)
-                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                        ->readonly(),
+                    $this->createTextInput("{$characterClassName}_critical_value_percentage", 'Percentage Value', 0.00, 1),
+                    $this->createTextInput("{$characterClassName}_rage_points", 'Rage Points', 100),
                 ]);
                 break;
             case 'spellweaver':
                 array_splice($fields['Offensive Values'], 3, 0, [
-                    Forms\Components\TextInput::make("{$characterClassName}_critical_value_percentage")
-                        ->label('Percentage Value')
-                        ->live()
-                        ->columnSpan(1)
-                        ->default(0)
-                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_mana_points")
-                        ->label('Mana Points')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(100)
-                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_mana_regeneration")
-                        ->label('Mana Regeneration')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(0)
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
-                        ->readonly(),
+                    $this->createTextInput("{$characterClassName}_critical_value_percentage", 'Percentage Value', 0.00, 1),
+                    $this->createTextInput("{$characterClassName}_mana_points", 'Mana Points', 100),
+                    $this->createTextInput("{$characterClassName}_mana_regeneration", 'Mana Regeneration', 0),
                 ]);
                 break;
             case 'steam_mechanicus':
                 array_splice($fields['Offensive Values'], 3, 0, [
-                    Forms\Components\TextInput::make("{$characterClassName}_critical_value_percentage")
-                        ->label('Percentage Value')
-                        ->live()
-                        ->columnSpan(1)
-                        ->default(0)
-                        ->formatStateUsing(fn(string $state): string => number_format((float) $state, 2) . '%')
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_steam_points")
-                        ->label('Steam Points')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(100)
-                        ->formatStateUsing(fn(string $state): string => number_format((int) $state))
-                        ->readonly(),
-
-                    Forms\Components\TextInput::make("{$characterClassName}_steam_regeneration")
-                        ->label('Steam Regeneration')
-                        ->live()
-                        ->columnSpanFull()
-                        ->default(0)
-                        ->formatStateUsing(fn($state) => number_format((float) $state, 2, '.', ''))
-                        ->readonly(),
+                    $this->createTextInput("{$characterClassName}_critical_value_percentage", 'Percentage Value', 0.00, 1),
+                    $this->createTextInput("{$characterClassName}_steam_points", 'Steam Points', 100),
+                    $this->createTextInput("{$characterClassName}_steam_regeneration", 'Steam Regeneration', 0),
                 ]);
                 break;
             default:
@@ -1426,5 +1180,17 @@ class StatsCalculator extends Page implements HasForms
         }
 
         return $fields;
+    }
+
+    private function createTextInput($name, $label, $defaultValue, $columnSpan = 2)
+    {
+        $decimalPlaces = ($label === 'Attacks Per Second' || $label === 'Movement Speed') ? 3 : 2;
+
+        return Forms\Components\TextInput::make($name)
+            ->label($label)
+            ->live()
+            ->columnSpan($columnSpan)
+            ->default($defaultValue)
+            ->formatStateUsing(fn ($state) => is_float($state) ? number_format((float) $state, $decimalPlaces, '.', '') : number_format((int) $state));
     }
 }
